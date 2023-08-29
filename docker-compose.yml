@@ -1,0 +1,13 @@
+version: '3.6'
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: example
+
+  mariadb:
+    image: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: example
+
+ 
