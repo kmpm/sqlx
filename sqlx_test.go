@@ -90,11 +90,11 @@ func ConnectAll() {
 	}
 
 	if TestSqlite {
-		if failConnection {
-			panic(err)
-		}
 		sldb, err = Connect("sqlite3", sqdsn)
 		if err != nil {
+			if failConnection {
+				panic(err)
+			}
 			fmt.Printf("Disabling SQLite:\n    %v\n", err)
 			TestSqlite = false
 		}
