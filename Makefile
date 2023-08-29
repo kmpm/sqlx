@@ -50,4 +50,4 @@ testdb_up:
 .PHONY: testdb_down
 testdb_down:
 	docker compose -f _testdb/docker-compose.yml rm -fsv
-	rm $(SQLY_SQLITE_DSN)
+	-rm $(SQLY_SQLITE_DSN)
