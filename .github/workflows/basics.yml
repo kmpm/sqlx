@@ -13,10 +13,23 @@ jobs:
       SQLX_MYSQL_DSN: "root:example@localhost/sqlxtest?parseTime=true"
       SQLX_POSTGRES_DSN: "postgres://postgres:example@localhost/sqlxtest?sslmode=disable"
     services:
-      mariadb:
-        image: mariadb
+      mysql:
+        image: mysql:5
+        env:
+          MYSQL_ROOT_PASSWORD: example
+        ports:
+          - 3306:3306
       postgres:
         image: postgres
+        env:
+          POSTGRES_PASSWORD: example
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         
                
     steps:
