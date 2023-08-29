@@ -52,6 +52,7 @@ func ConnectAll() {
 	pgdsn := os.Getenv("SQLX_POSTGRES_DSN")
 	mydsn := os.Getenv("SQLX_MYSQL_DSN")
 	sqdsn := os.Getenv("SQLX_SQLITE_DSN")
+	failConnection := os.Getenv("SQLX_TEST_FAIL_CONNECTION") != ""
 
 	TestPostgres = pgdsn != "skip"
 	TestMysql = mydsn != "skip"
@@ -64,6 +65,9 @@ func ConnectAll() {
 	if TestPostgres {
 		pgdb, err = Connect("postgres", pgdsn)
 		if err != nil {
+			if failConnection {
+				panic(err)
+			}
 			fmt.Printf("Disabling PG tests:\n    %v\n", err)
 			fmt.Printf("   pgdsn: %s\n", pgdsn)
 			TestPostgres = false
@@ -75,6 +79,9 @@ func ConnectAll() {
 	if TestMysql {
 		mysqldb, err = Connect("mysql", mydsn)
 		if err != nil {
+			if failConnection {
+				panic(err)
+			}
 			fmt.Printf("Disabling MySQL tests:\n    %v\n", err)
 			TestMysql = false
 		}
@@ -83,6 +90,9 @@ func ConnectAll() {
 	}
 
 	if TestSqlite {
+		if failConnection {
+			panic(err)
+		}
 		sldb, err = Connect("sqlite3", sqdsn)
 		if err != nil {
 			fmt.Printf("Disabling SQLite:\n    %v\n", err)

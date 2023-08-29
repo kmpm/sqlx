@@ -7,8 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.16']
+        go-version: ['1.16', '1.21']
     env:
+      SQLX_TEST_FAIL_CONNECTION: true
       SQLX_SQLITE_DSN: "./sqlxtest.db"
       SQLX_MYSQL_DSN: "root:example@tcp(127.0.0.1)/sqlxtest?parseTime=true"
       SQLX_POSTGRES_DSN: "postgres://postgres:example@127.0.0.1/sqlxtest?sslmode=disable"
