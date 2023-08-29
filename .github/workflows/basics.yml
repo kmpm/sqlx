@@ -10,19 +10,21 @@ jobs:
         go-version: ['1.16']
     env:
       SQLX_SQLITE_DSN: "./sqlxtest.db"
-      SQLX_MYSQL_DSN: "root:example@localhost/sqlxtest?parseTime=true"
-      SQLX_POSTGRES_DSN: "postgres://postgres:example@localhost/sqlxtest?sslmode=disable"
+      SQLX_MYSQL_DSN: "root:example@tcp(127.0.0.1)/sqlxtest?parseTime=true"
+      SQLX_POSTGRES_DSN: "postgres://postgres:example@127.0.0.1/sqlxtest?sslmode=disable"
     services:
       mysql:
         image: mysql:5
         env:
           MYSQL_ROOT_PASSWORD: example
+          MYSQL_DATABASE: sqlxtest
         ports:
           - 3306:3306
       postgres:
         image: postgres
         env:
           POSTGRES_PASSWORD: example
+          POSTGRES_DB: sqlxtest
         ports:
           - 5432:5432
         
