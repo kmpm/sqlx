@@ -1,13 +1,12 @@
 // The following environment variables, if set, will be used:
 //
-//	* SQLX_SQLITE_DSN
-//	* SQLX_POSTGRES_DSN
-//	* SQLX_MYSQL_DSN
+//   - SQLX_SQLITE_DSN
+//   - SQLX_POSTGRES_DSN
+//   - SQLX_MYSQL_DSN
 //
 // Set any of these variables to 'skip' to skip them.  Note that for MySQL,
 // the string '?parseTime=True' will be appended to the DSN if it's not there
 // already.
-//
 package sqlx
 
 import (
@@ -66,6 +65,7 @@ func ConnectAll() {
 		pgdb, err = Connect("postgres", pgdsn)
 		if err != nil {
 			fmt.Printf("Disabling PG tests:\n    %v\n", err)
+			fmt.Printf("   pgdsn: %s\n", pgdsn)
 			TestPostgres = false
 		}
 	} else {
@@ -75,7 +75,7 @@ func ConnectAll() {
 	if TestMysql {
 		mysqldb, err = Connect("mysql", mydsn)
 		if err != nil {
-			fmt.Printf("Disabling MySQL tests:\n    %v", err)
+			fmt.Printf("Disabling MySQL tests:\n    %v\n", err)
 			TestMysql = false
 		}
 	} else {
@@ -85,7 +85,7 @@ func ConnectAll() {
 	if TestSqlite {
 		sldb, err = Connect("sqlite3", sqdsn)
 		if err != nil {
-			fmt.Printf("Disabling SQLite:\n    %v", err)
+			fmt.Printf("Disabling SQLite:\n    %v\n", err)
 			TestSqlite = false
 		}
 	} else {

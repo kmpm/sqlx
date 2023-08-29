@@ -1,0 +1,27 @@
+version: '3.6'
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: sqlxtest
+    ports:
+      - "5432:5432"
+      
+
+  # mariadb:
+  #   image: mariadb
+  #   environment:
+  #     MARIADB_ROOT_PASSWORD: example
+  #     MARIADB_DATABASE: sqlxtest
+  #   ports:
+  #     - "3306:3306"
+ 
+ 
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: sqlxtest
+    ports:
+      - "3306:3306"
