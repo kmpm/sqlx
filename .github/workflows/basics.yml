@@ -41,8 +41,8 @@ jobs:
           go-version: '${{ matrix.go-version }}'
       - name: Check services
         run: |
-          _testdb/wait localhost 3306
-          _testdb/wait localhost 5432
+          _testdb/wait.sh localhost 3306
+          _testdb/wait.sh localhost 5432
       # - name: Build
       #   run: go build -v ./...
       - name: Test
