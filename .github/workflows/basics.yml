@@ -9,7 +9,7 @@ jobs:
       matrix:
         go-version: ['1.16']
     env:
-      SQLX_SQLITE_DSN: "${{ env.HOME }}/sqlxtest.db"
+      SQLX_SQLITE_DSN: "./sqlxtest.db"
       SQLX_MYSQL_DSN: "root:example@localhost/sqlxtest?parseTime=true"
       SQLX_POSTGRES_DSN: "postgres://postgres:example@localhost/sqlxtest?sslmode=disable"
     services:
@@ -24,7 +24,9 @@ jobs:
       - name: Local Services Workaround
         if: ${{ env.ACT }}
         run: |
-          docker compose up -d
+          sudo apt-get update
+          sudo apt-get -yqq install netcat-traditional
+          make test_up
       - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
