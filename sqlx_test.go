@@ -33,71 +33,71 @@ var _, _ ColScanner = &Row{}, &Rows{}
 var _ Queryer = &qStmt{}
 var _ Execer = &qStmt{}
 
-var TestPostgres = true
-var TestSqlite = true
-var TestMysql = true
+type testDb struct {
+	name string
+	skip bool
+	fail bool
+	db   *DB
+	err  error
+}
 
-var sldb *DB
-var pgdb *DB
-var mysqldb *DB
-var active = []*DB{}
+func (tdb *testDb) Runnable(t *testing.T) bool {
+	if tdb.skip {
+		return false
+	}
+	if tdb.db == nil {
+		if !tdb.fail {
+			return false
+		}
+		t.Errorf("%s is not connected: %v", tdb.name, tdb.err)
+		return false
+	}
+	return true
+}
+
+var testDbs []*testDb
+
+// var active = []*DB{}
 
 func init() {
 	ConnectAll()
 }
 
 func ConnectAll() {
-	var err error
+
+	// testDbs = make([]*testDb, 0)
 
 	pgdsn := os.Getenv("SQLX_POSTGRES_DSN")
 	mydsn := os.Getenv("SQLX_MYSQL_DSN")
 	sqdsn := os.Getenv("SQLX_SQLITE_DSN")
-	failConnection := os.Getenv("SQLX_TEST_FAIL_CONNECTION") != ""
+	fail := os.Getenv("SQLX_TEST_FAIL_CONNECTION") != ""
 
-	TestPostgres = pgdsn != "skip"
-	TestMysql = mydsn != "skip"
-	TestSqlite = sqdsn != "skip"
-
+	testPg := testDb{name: "postgres", skip: pgdsn == "skip", fail: fail}
+	testMy := testDb{name: "mysql", skip: mydsn == "skip", fail: fail}
+	testSq := testDb{name: "sqlite", skip: mydsn == "sqdsn", fail: fail}
+	// TestPostgres = pgdsn != "skip"
+	// TestMysql = mydsn != "skip"
+	// TestSqlite = sqdsn != "skip"
+	testDbs = []*testDb{&testPg, &testMy, &testSq}
 	if !strings.Contains(mydsn, "parseTime=true") {
 		mydsn += "?parseTime=true"
 	}
 
-	if TestPostgres {
-		pgdb, err = Connect("postgres", pgdsn)
-		if err != nil {
-			if failConnection {
-				panic(err)
-			}
-			fmt.Printf("Disabling PG tests:\n    %v\n", err)
-			fmt.Printf("   pgdsn: %s\n", pgdsn)
-			TestPostgres = false
-		}
+	if !testPg.skip {
+		testPg.db, testPg.err = Connect("postgres", pgdsn)
 	} else {
 		fmt.Println("Disabling Postgres tests.")
 	}
 
-	if TestMysql {
-		mysqldb, err = Connect("mysql", mydsn)
-		if err != nil {
-			if failConnection {
-				panic(err)
-			}
-			fmt.Printf("Disabling MySQL tests:\n    %v\n", err)
-			TestMysql = false
-		}
+	if !testMy.skip {
+		testMy.db, testMy.err = Connect("mysql", mydsn)
+
 	} else {
 		fmt.Println("Disabling MySQL tests.")
 	}
 
-	if TestSqlite {
-		sldb, err = Connect("sqlite3", sqdsn)
-		if err != nil {
-			if failConnection {
-				panic(err)
-			}
-			fmt.Printf("Disabling SQLite:\n    %v\n", err)
-			TestSqlite = false
-		}
+	if !testSq.skip {
+		testSq.db, testSq.err = Connect("sqlite3", sqdsn)
 	} else {
 		fmt.Println("Disabling SQLite tests.")
 	}
@@ -106,6 +106,18 @@ func ConnectAll() {
 type Schema struct {
 	create string
 	drop   string
+}
+
+func (s Schema) ByName(name string) (string, string, string) {
+	switch name {
+	case "postgres":
+		return s.Postgres()
+	case "mysql":
+		return s.MySQL()
+	case "sqlite":
+		return s.Sqlite3()
+	}
+	panic(fmt.Errorf("schema for name '%s' does not exist", name))
 }
 
 func (s Schema) Postgres() (string, string, string) {
@@ -238,18 +250,13 @@ func RunWithSchema(schema Schema, t *testing.T, test func(db *DB, t *testing.T, 
 		test(db, t, now)
 	}
 
-	if TestPostgres {
-		create, drop, now := schema.Postgres()
-		runner(pgdb, t, create, drop, now)
+	for _, tdb := range testDbs {
+		if tdb.Runnable(t) {
+			create, drop, now := schema.ByName(tdb.name)
+			runner(tdb.db, t, create, drop, now)
+		}
 	}
-	if TestSqlite {
-		create, drop, now := schema.Sqlite3()
-		runner(sldb, t, create, drop, now)
-	}
-	if TestMysql {
-		create, drop, now := schema.MySQL()
-		runner(mysqldb, t, create, drop, now)
-	}
+
 }
 
 func loadDefaultFixture(db *DB, t *testing.T) {

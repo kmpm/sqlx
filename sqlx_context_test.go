@@ -1,15 +1,15 @@
+//go:build go1.8
 // +build go1.8
 
 // The following environment variables, if set, will be used:
 //
-//	* SQLX_SQLITE_DSN
-//	* SQLX_POSTGRES_DSN
-//	* SQLX_MYSQL_DSN
+//   - SQLX_SQLITE_DSN
+//   - SQLX_POSTGRES_DSN
+//   - SQLX_MYSQL_DSN
 //
 // Set any of these variables to 'skip' to skip them.  Note that for MySQL,
 // the string '?parseTime=True' will be appended to the DSN if it's not there
 // already.
-//
 package sqlx
 
 import (
@@ -50,18 +50,11 @@ func RunWithSchemaContext(ctx context.Context, schema Schema, t *testing.T, test
 		MultiExecContext(ctx, db, create)
 		test(ctx, db, t)
 	}
-
-	if TestPostgres {
-		create, drop, now := schema.Postgres()
-		runner(ctx, pgdb, t, create, drop, now)
-	}
-	if TestSqlite {
-		create, drop, now := schema.Sqlite3()
-		runner(ctx, sldb, t, create, drop, now)
-	}
-	if TestMysql {
-		create, drop, now := schema.MySQL()
-		runner(ctx, mysqldb, t, create, drop, now)
+	for _, tdb := range testDbs {
+		if tdb.Runnable(t) {
+			create, drop, now := schema.ByName(tdb.name)
+			runner(ctx, tdb.db, t, create, drop, now)
+		}
 	}
 }
 
